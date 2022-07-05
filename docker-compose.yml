@@ -1,0 +1,5 @@
+services:
+  prommetrics:
+    build: ./
+    ports:
+      - "8088:8088"
