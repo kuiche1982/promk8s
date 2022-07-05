@@ -1,0 +1,44 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  labels:
+    release: kube-prometheus-stack
+  name: maxcloud-monitor
+  namespace: spotmax-maxcloud
+spec:
+  namespaceSelector:
+    matchNames:
+      - default
+  podMetricsEndpoints:
+    - interval: 15s
+      path: /metrics
+      port: httpwithmetrics
+  selector:
+    matchLabels:
+      maxcloud-prometheus-metrics: enabled
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: DemonSrv
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: DemonSrv
+  template:
+    metadata:
+      name: DemonSrv
+      creationTimestamp: null
+      labels:
+        app: DemonSrv
+        maxcloud-prometheus-metrics: enabled
+    spec:
+      containers:
+        - name: DemonSrv
+          image: chenkui/test:p2.0
+          ports:
+            - name: httpwithmetrics
+              containerPort: 8088
+              protocol: TCP
