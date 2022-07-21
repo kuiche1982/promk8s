@@ -107,3 +107,18 @@ g = Gauge('job_last_success_unixtime', 'Last time a batch job successfully finis
 g.set_to_current_time()
 push_to_gateway('localhost:9091', job='batchA', registry=registry)
 ``
+
+
+The label set defined by the URL path is used as a `grouping key`. Any of those labels already set in the body of the request (as regular labels, e.g. name{job="foo"} 42) will `be overwritten` to match the labels defined by the URL path!
+https://github.com/prometheus/pushgateway/issues/65
+
+Do cleanup if we have many metrics group and it might be pulled by prometheus aftert the job is ended. 
+DELETE method
+DELETE is used to delete metrics from the Pushgateway. The request must not contain any content. All metrics with the grouping key specified in the URL are deleted.
+
+The response code upon success is always 202. The delete request is merely queued at that moment. There is no guarantee that the request will actually be executed or that the result will make it to the persistence layer (e.g. in case of a server crash). However, the order of PUT/POST and DELETE request is guaranteed, i.e. if you have successfully sent a DELETE request and then send a PUT, it is guaranteed that the DELETE will be processed first (and vice versa).
+
+Deleting a grouping key without metrics is a no-op and will not result in an error.
+
+Push frequency should be the same as promehteus pull frequency, so no data ignored
+
